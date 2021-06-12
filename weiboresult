@@ -1,0 +1,28 @@
+import requests
+from bs4 import BeautifulSoup 
+import jieba 
+from pyecharts.charts import WordCloud 
+url = "https://s.weibo.com/weibo?q=%E5%8C%97%E4%BA%AC%E9%AB%98%E8%80%83&wvr=6&b=1&sudaref=weibo.com&display=0&retcode=6102&Refer=SWeibo_box"
+headers = {"User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36"}
+html = requests.get(url, headers = headers).text 
+soup = BeautifulSoup(html, "lxml")
+
+content_all = soup.find_all(class_="txt")
+wordlist = []
+for i in content_all:
+    contentString = i.text
+    words = jieba.lcut(contentString)
+    wordlist = wordlist + words 
+
+worddict = {}
+for word in wordlist:
+    if len(word) > 1 :
+        if word != "..." :
+            if word not in worddict.keys():
+                worddict[word] = 1
+            else:
+                worddict[word] = worddict[word] + 1
+
+wc = WordCloud()
+wc.add(series_name = "", data_pair = worddict.items(), width = 800, height = 500, word_size_range = [20, 90])
+wc.render("北京高考微博.html")
